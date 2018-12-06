@@ -1,59 +1,17 @@
-from .models import Gist
+class Gist(object):
+    def __init__(self, gist):
+        self.id = gist[0]
+        self.github_id = gist[1]
+        self.html_url = gist[2]
+        self.git_pull_url = gist[3]
+        self.git_push_url = gist[4]
+        self.commits_url = gist[5]
+        self.forks_url = gist[6]
+        self.public = gist[7]
+        self.created_at = gist[8]
+        self.updated_at = gist[9]
+        self.comments = gist[10]
+        self.comments_url = gist[11]
 
-DATETIME_PREFIXES = ('created_at', 'updated_at')
-
-
-def is_datetime_param(param):
-    for prefix in DATETIME_PREFIXES:
-        if param.startswith(prefix):
-            return True
-    return False
-
-
-def get_operator(comparison):
-    return {
-        'lt': '<',
-        'lte': '<=',
-        'gt': '>',
-        'gte': '>=',
-    }[comparison]
-
-
-def build_query(**kwargs):
-    # This is UGLY as fuck. Please remove.
-    query = 'SELECT * FROM gists'
-    values = {}
-    if kwargs:
-        filters = []
-        for param, value in kwargs.items():
-            if is_datetime_param(param):
-                if '__' in param:
-                    attribute, comparison = param.split('__')
-                    operator = get_operator(comparison)
-                    filters.append(
-                        'datetime(%s) %s datetime(:%s)' % (
-                            attribute, operator, param))
-                else:
-                    attribute = param
-                    filters.append(
-                        'datetime(%s) == datetime(:%s)' % (
-                            attribute, param))
-                values[param] = value
-            else:
-                filters.append(
-                    '%s = :%s' % (
-                        param, param))
-                values[param] = value
-
-        query += ' WHERE '
-        query += ' AND '.join(filters)
-
-    return query, values
-
-def search_gists(db_connection, **kwargs):
-    query, params = build_query(**kwargs)
-    cursor = db_connection.execute(query, params)
-    results = []
-    for gist in cursor:
-        results.append(Gist(gist))
-    return results
+    def __str__(self):
+        return 'Gist: {}'.format(self.github_id)
